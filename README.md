@@ -10,9 +10,11 @@ PBKDF2-SHA-256, 250k iterations). The published `index.html` contains only the e
 plaintext content. The browser decrypts it client-side via the Web Crypto API after you enter the
 passphrase.
 
-- Passphrase: `shenzhen`
+- The passphrase is supplied at build time via the `SZ_PW` environment variable and is
+  **intentionally never committed to this repo** — otherwise anyone could read it and decrypt
+  the page, defeating the gate. (The repo is public so GitHub Pages can serve it on a free plan.)
 - This is genuine encryption (content is not readable via "View Source"), **but** a short
-  dictionary word is brute-forceable offline. It keeps the page from casual eyes, not determined attackers.
+  dictionary passphrase is brute-forceable offline. It keeps the page from casual eyes, not determined attackers.
 
 ## ✏️ Editing & rebuilding
 
@@ -21,9 +23,12 @@ passphrase.
 3. Rebuild the encrypted page:
 
    ```bash
-   node build.mjs            # uses passphrase "shenzhen"
-   SZ_PW="newpass" node build.mjs   # to change the passphrase
+   SZ_PW="your passphrase" node build.mjs         # bash / git-bash
    ```
+   ```powershell
+   $env:SZ_PW="your passphrase"; node build.mjs   # PowerShell
+   ```
+   The build fails fast if `SZ_PW` is unset, so the passphrase never gets hardcoded.
 
    This regenerates `index.html`.
 4. Commit & push — GitHub Pages serves the new `index.html`.

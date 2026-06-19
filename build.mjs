@@ -2,7 +2,11 @@
 // Browser decrypts with Web Crypto (PBKDF2 -> AES-GCM). Params here MUST match the template.
 import { readFile, writeFile } from "node:fs/promises";
 
-const PASSWORD = process.env.SZ_PW || "shenzhen";
+const PASSWORD = process.env.SZ_PW;
+if (!PASSWORD) {
+  console.error('Passphrase required (kept out of source). Run:  SZ_PW="your passphrase" node build.mjs');
+  process.exit(1);
+}
 const ITER = 250000;
 const subtle = globalThis.crypto.subtle;
 
@@ -31,4 +35,4 @@ if (template.includes("/*__PAYLOAD__*/") || template.includes("/*__ITER__*/")) {
 }
 
 await writeFile(new URL("./index.html", import.meta.url), template, "utf8");
-console.log(`OK: index.html built (${content.length} chars content -> ${new Uint8Array(ctBuf).length} bytes ciphertext, password="${PASSWORD}")`);
+console.log(`OK: index.html built (${content.length} chars content -> ${new Uint8Array(ctBuf).length} bytes ciphertext)`);

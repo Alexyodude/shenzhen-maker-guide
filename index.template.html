@@ -236,33 +236,34 @@ function reveal(html) {
   document.getElementById("site").classList.remove("hidden");
 }
 
-async function attempt(password, fromStore) {
+async function attempt(password) {
   try {
     const html = await tryDecrypt(password);
-    sessionStorage.setItem("sz_pw", password);
+    // Cache the DECRYPTED content (never the passphrase) so an in-session reload
+    // doesn't re-prompt. The plaintext is what the user already sees, so this
+    // stores no extra secret — and the gate key never touches storage.
+    try { sessionStorage.setItem("sz_html", html); } catch (_) {}
     reveal(html);
     return true;
   } catch (e) {
-    if (!fromStore) {
-      const err = document.getElementById("err");
-      err.textContent = "ACCESS DENIED — wrong passphrase";
-      const box = document.querySelector(".gate-box");
-      box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
-      const pw = document.getElementById("pw"); pw.value = ""; pw.focus();
-    }
+    const err = document.getElementById("err");
+    err.textContent = "ACCESS DENIED — wrong passphrase";
+    const box = document.querySelector(".gate-box");
+    box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+    const pw = document.getElementById("pw"); pw.value = ""; pw.focus();
     return false;
   }
 }
 
 document.getElementById("gate-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  attempt(document.getElementById("pw").value, false);
+  attempt(document.getElementById("pw").value);
 });
 
-// auto-unlock within the same browser session
-(async () => {
-  const saved = sessionStorage.getItem("sz_pw");
-  if (saved) { const ok = await attempt(saved, true); if (!ok) sessionStorage.removeItem("sz_pw"); }
+// re-reveal within the same browser session without re-entering the passphrase
+(() => {
+  const cached = sessionStorage.getItem("sz_html");
+  if (cached) reveal(cached);
 })();
 </script>
 </body>
