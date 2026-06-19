@@ -1,0 +1,11 @@
+# plaintext content source — kept LOCAL ONLY so it never reaches GitHub.
+# index.html (encrypted) is the only content that gets published.
+content.html
+
+# tooling / scratch
+.playwright-mcp/
+.omc/
+node_modules/
+*.png
+*.log
+.DS_Store
